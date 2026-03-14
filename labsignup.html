@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixlings Beta Lab</title>
+
+<style>
+
+/* Terrarium Light */
+:root {
+--background: #D7C3AC;
+--onBackground: #1A2E2A;
+--surface: #A1B5A7;
+--primary: #2C504A;
+--secondary: #296673;
+--tertiary: #B087AE;
+--outline: #2C504A;
+}
+
+/* Terrarium Dark */
+@media (prefers-color-scheme: dark) {
+:root {
+--background: #211608;
+--onBackground: #EDE0CF;
+--surface: #2C2010;
+--primary: #A8D1C8;
+--secondary: #88BDC9;
+--tertiary: #C9A8C6;
+--outline: #A8D1C8;
+}
+}
+
+body{
+margin:0;
+font-family: system-ui, -apple-system, sans-serif;
+background: var(--background);
+color: var(--onBackground);
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
+}
+
+.container{
+max-width:620px;
+background: var(--surface);
+padding:40px;
+border-radius:18px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+border:2px solid var(--outline);
+}
+
+h1{
+margin-top:0;
+font-size:2rem;
+color:var(--primary);
+}
+
+.subtitle{
+opacity:0.8;
+margin-bottom:20px;
+}
+
+.notice{
+background:rgba(0,0,0,0.08);
+padding:14px;
+border-radius:12px;
+margin:20px 0;
+}
+
+button{
+background:var(--primary);
+color:white;
+border:none;
+padding:14px 22px;
+border-radius:12px;
+font-size:16px;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 8px 18px rgba(0,0,0,0.2);
+}
+
+.footer{
+margin-top:24px;
+font-size:14px;
+opacity:0.7;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Pixlings Beta Lab</h1>
+
+<p class="subtitle">
+A tiny terrarium world is being prepared for release.
+Before it escapes into the wild, it needs testers.
+</p>
+
+<div class="notice">
+🌱 <b>Important:</b> This beta currently supports <b>Nothing Phone (3)</b> only.
+</div>
+
+<p>
+We’re looking for <b>12 testers</b> to explore Pixlings for <b>14 days</b>.
+Expect bugs, strange behavior, and tiny digital creatures doing mysterious things.
+</p>
+
+<button onclick="apply()">Apply to Test</button>
+
+<div class="footer">
+first 12 humans enter the terrarium 🌿
+</div>
+
+</div>
+
+<script>
+
+function apply(){
+
+const subject = encodeURIComponent("Pixlings Tester Application")
+
+const body = encodeURIComponent(
+`Hello,
+
+I would like to apply to be a Pixlings tester.
+
+Device: Nothing Phone (3)
+
+Google Account Email (for Play Store testing access):
+
+Notes:
+`
+)
+
+window.location.href =
+`mailto:support@bleelblep.addy.io?subject=${subject}&body=${body}`
+
+}
+
+</script>
+
+</body>
+</html>
