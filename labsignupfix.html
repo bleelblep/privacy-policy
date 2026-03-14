@@ -231,6 +231,57 @@ font-size:1.6rem;
 
 }
 
+/* COUNTER */
+
+.counter{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:20px;
+padding:12px 14px;
+background:rgba(0,0,0,0.08);
+border-radius:12px;
+font-size:0.9rem;
+}
+
+.counter-bar-wrap{
+flex:1;
+height:8px;
+background:rgba(0,0,0,0.12);
+border-radius:99px;
+overflow:hidden;
+}
+
+.counter-bar{
+height:100%;
+background:var(--primary);
+border-radius:99px;
+transition:width .6s cubic-bezier(.4,0,.2,1);
+width:0%;
+}
+
+.counter-label{
+white-space:nowrap;
+font-weight:600;
+font-size:0.85rem;
+opacity:.8;
+min-width:72px;
+text-align:right;
+}
+
+/* FULL STATE */
+
+.full-notice{
+text-align:center;
+padding:20px 0 8px;
+}
+
+.full-notice .lock{
+font-size:2rem;
+display:block;
+margin-bottom:8px;
+}
+
 /* REDUCE ANIMATION IF USER PREFERS */
 
 @media (prefers-reduced-motion: reduce){
@@ -284,13 +335,71 @@ Expect bugs, strange behavior, and mysterious tiny creatures.
   <span style="opacity:.7">You'll hear back if you make it into the terrarium.</span>
 </div>
 
-<p style="opacity:.7;margin-top:18px">
+<div id="full-notice" class="full-notice" style="display:none">
+  <span class="lock">🔒</span>
+  <b>The terrarium is full.</b><br>
+  <span style="opacity:.7">All 12 spots have been claimed. Check back if a spot opens up.</span>
+</div>
+
+<div class="counter" id="counter-wrap">
+  <div class="counter-bar-wrap">
+    <div class="counter-bar" id="counter-bar"></div>
+  </div>
+  <div class="counter-label" id="counter-label">loading…</div>
+</div>
+
+<p style="opacity:.7;margin-top:14px;font-size:0.85rem">
 first 12 humans enter the terrarium 🌿
 </p>
 
 </div>
 
 <script>
+
+const MAX = 12
+const COUNTER_NAMESPACE = "pixlings-beta"
+const COUNTER_KEY = "signups"
+const ABACUS = `https://abacus.jasoncameron.dev`
+
+/* Read current count (no increment) */
+async function getCount(){
+  try {
+    const res = await fetch(`${ABACUS}/get/${COUNTER_NAMESPACE}/${COUNTER_KEY}`)
+    if(res.status === 404) return 0   // key not yet created
+    const data = await res.json()
+    return Math.min(data.value || 0, MAX)
+  } catch(e){
+    return null
+  }
+}
+
+/* Increment and return new count */
+async function incrementCount(){
+  const res = await fetch(`${ABACUS}/hit/${COUNTER_NAMESPACE}/${COUNTER_KEY}`)
+  const data = await res.json()
+  return data.value || MAX
+}
+
+function updateCounterUI(count){
+  if(count === null) {
+    document.getElementById("counter-label").textContent = "? / 12 spots"
+    return
+  }
+  const pct = (count / MAX) * 100
+  document.getElementById("counter-bar").style.width = pct + "%"
+  document.getElementById("counter-label").textContent = `${count} / ${MAX} spots`
+}
+
+function lockForm(){
+  document.getElementById("form-wrap").style.display = "none"
+  document.getElementById("full-notice").style.display = "block"
+}
+
+/* Init: check count on page load */
+getCount().then(count => {
+  updateCounterUI(count)
+  if(count !== null && count >= MAX) lockForm()
+})
 
 async function apply(){
   const email = document.getElementById("email").value.trim()
@@ -299,6 +408,13 @@ async function apply(){
 
   if(!email || !googleEmail){
     alert("Please fill in both email fields.")
+    return
+  }
+
+  /* Re-check count before submitting to guard against race */
+  const current = await getCount()
+  if(current !== null && current >= MAX){
+    lockForm()
     return
   }
 
@@ -318,8 +434,14 @@ async function apply(){
     })
 
     if(res.ok){
+      /* Increment counter only after successful Formspree submit */
+      const newCount = await incrementCount()
+      updateCounterUI(Math.min(newCount, MAX))
+
       document.getElementById("form-wrap").style.display = "none"
       document.getElementById("success-msg").style.display = "block"
+
+      if(newCount >= MAX) lockForm()
     } else {
       btn.disabled = false
       btn.textContent = "Apply to Test"
